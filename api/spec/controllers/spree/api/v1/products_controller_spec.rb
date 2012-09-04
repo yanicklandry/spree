@@ -32,6 +32,7 @@ module Spree
         it "can select the next page of products" do
           second_product = create(:product)
           api_get :index, :page => 2
+          p json_response
           json_response["products"].first.should have_attributes(attributes)
           json_response["count"].should == 2
           json_response["current_page"].should == 2
