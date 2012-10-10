@@ -30,13 +30,13 @@ module Spree
     end
 
     # human readable list of variant options
-    def variant_options(v, allow_back_orders = Spree::Config[:allow_backorders], include_style = true)
+    def variant_options(v, options={})
       list = v.options_text
 
       # We shouldn't show out of stock if the product is infact in stock
       # or when we're not allowing backorders.
-      unless (allow_back_orders || v.in_stock?)
-        list = if include_style
+      unless v.in_stock?
+        list = if options[:include_style]
           content_tag(:span, "(#{t(:out_of_stock)}) #{list}", :class => 'out-of-stock')
         else
           "#{t(:out_of_stock)} #{list}"
@@ -79,7 +79,7 @@ module Spree
     end
 
     def flash_messages(opts = {})
-      opts[:ignore_types] = [:commerce_tracking].concat([opts[:ignore_types]] || [])
+      opts[:ignore_types] = [:commerce_tracking].concat(Array(opts[:ignore_types]) || [])
 
       flash.each do |msg_type, text|
         unless opts[:ignore_types].include?(msg_type)
@@ -150,6 +150,11 @@ module Spree
 
     def money(amount)
       Spree::Money.new(amount)
+    end
+
+    def pretty_time(time)
+      [I18n.l(time.to_date, :format => :long),
+        time.strftime("%H:%m %p")].join(" ")
     end
 
     def method_missing(method_name, *args, &block)

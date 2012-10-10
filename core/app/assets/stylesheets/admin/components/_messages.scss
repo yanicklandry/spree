@@ -1,0 +1,43 @@
+.errorExplanation {
+  padding: 5px;
+  border: 1px solid lighten($c_red1, 45);
+  background-color: lighten($c_red1, 55);
+  border-radius: 3px;
+  color: lighten($c_red1, 30);
+  margin-bottom: 15px;
+
+  h2 {
+    font-size: 140%;
+    color: lighten($c_red1, 20);
+    margin-bottom: 5px;
+  }
+
+  p {
+    padding: 10px 0;
+  }
+
+  ul {
+    list-style-position: inside;
+
+    li {
+      font-weight: bold;
+    }
+  }
+}
+
+.flash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 17px;
+  text-align: center;
+  z-index: 1000;
+  font-size: 120%;
+  color: white;
+  font-weight: bold;
+
+  &.notice  { background-color: rgba($c_yellow1, 0.8) }
+  &.success { background-color: rgba($c_green1, 0.8)  }
+  &.error   { background-color: rgba($c_red1, 0.8)    }
+}

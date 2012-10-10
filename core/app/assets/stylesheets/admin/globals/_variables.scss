@@ -1,0 +1,30 @@
+// ------------------------------------------------------------- 
+//   Variables used in all other files   
+//--------------------------------------------------------------
+
+
+// Fonts
+//--------------------------------------------------------------
+$base-font-family: "Open Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+
+// Colors
+//--------------------------------------------------------------
+$c_gray1:   #929292;
+$c_green1:  #9FC820;
+$c_blue1:   #5FA5E8;
+$c_blue2:   #D4F1F7;
+$c_blue3:   #6788A2;
+$c_red1:    #C60F13;
+$c_yellow1: #FF9300;
+
+$color-body-text: $c_blue3;
+$color-headers:   $c_blue3;
+$color-links:     $c_blue1;
+$color-border:    lighten($c_blue1, 27);
+
+// Gradients
+//--------------------------------------------------------------
+
+// Sizes
+//--------------------------------------------------------------
+$body-font-size: 13.037px;

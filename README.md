@@ -152,7 +152,11 @@ to
 ```ruby
 Spree.user_class = "Spree::User"
 ```
-and then run `bundle exec rake spree_auth:admin:create` in order to set up the admin user for the application.
+
+In order to set up the admin user for the application you should then run:
+
+    $ bundle exec rake spree_auth:admin:create
+
 
 Running Tests
 -------------
@@ -184,15 +188,7 @@ If you want to run a particular line of spec
 
     $ bundle exec rspec spec/models/state_spec.rb:7
 
-Travis, the continuous integration service, runs the test suite for each gem one at a time.
-
-    $ alias set_gemfile='export BUNDLE_GEMFILE="`pwd`/Gemfile"'
-    $ bundle exec rake test_app
-    $ cd api; set_gemfile; bundle install; bundle exec rspec spec
-    $ cd ../core; set_gemfile; bundle install; bundle exec rspec spec
-    $ cd ../dash; set_gemfile; bundle install; bundle exec rspec spec
-    $ cd ../promo; set_gemfile; bundle install; bundle exec rspec spec
-
+Travis, the continuous integration service, runs the test suite for each gem one at a time, using the same commands as contained within [`build.sh`](https://github.com/spree/spree/tree/master/build.sh).
 
 Contributing
 ------------

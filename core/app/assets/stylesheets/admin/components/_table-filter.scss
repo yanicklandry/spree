@@ -1,0 +1,30 @@
+#table-filter {
+
+  .field {
+    input[type="text"], input[type="phone"],
+    input[type="email"], input[type="number"],
+    input[type="url"] {
+      width: 100%;
+    }
+
+    input[type="checkbox"] {
+      display: inline-block;
+    }
+
+    label {
+      display: block;
+    }
+
+    &.checkbox {
+      padding: 0;
+
+      label {
+        display: inline-block;
+      }
+    }
+  }
+
+  .actions {
+    text-align: center;
+  }
+}

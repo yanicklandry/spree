@@ -87,7 +87,6 @@ module Spree
       master
     end
 
-
     def to_param
       permalink.present? ? permalink : (permalink_was || name.to_s.to_url)
     end
@@ -177,6 +176,10 @@ module Spree
     # their own definition.
     def deleted?
       !!deleted_at
+    end
+
+    def available?
+      !(available_on.nil? || available_on.future?)
     end
 
     # split variants list into hash which shows mapping of opt value onto matching variants
