@@ -1,0 +1,154 @@
+.date-range-filter {
+  .range-divider {
+    padding: 0 6px 0 5px;
+  }
+  input.datepicker {
+    width: 96px !important;
+  }
+}
+
+#ui-datepicker-div {
+  border-color: darken($c_blue1, 5);
+  @include border-radius(3px);
+  padding: 0;
+  margin-top: 10px;
+
+  &:before {
+    content: '';
+    position: absolute;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid $c_blue1;
+    top: 0px;
+    margin-top: -10px;
+    left: 25px;
+    z-index: 1;
+  }
+
+  .ui-datepicker-header {
+    padding: 0;
+    background-image: none;
+    background-color: $c_blue1;
+    border: none;
+    border-bottom: 1px solid darken($c_blue1, 5);
+    border-radius: 0;
+    height: 32px;
+
+    .ui-datepicker-prev, .ui-datepicker-next {
+      border-radius: 0;      
+      top: 0;
+      height: 32px;
+
+      &:hover {
+        border: none;
+        background-image: none;
+        background-color: $c_blue1;
+        cursor: pointer;
+      }
+
+      .ui-icon {
+        background-image: none;
+        text-indent: 0;
+        color: white;
+        width: 10px;
+        margin-left: -5px;
+        @extend [class^="icon-"]:before;
+
+        &:hover {
+          color: lighten($c_green1, 20);
+        }
+      }
+    }
+    .ui-datepicker-prev {
+      left: 0;
+
+      .ui-icon {
+        @extend .icon-arrow-left;        
+      }
+    }
+    .ui-datepicker-next {
+      right: 0;
+
+      .ui-icon {
+        @extend .icon-arrow-right;
+      }
+
+      &:hover {
+        .ui-icon {
+          margin-left: -6px;
+        }        
+      }
+    }
+
+    .ui-datepicker-title {
+      color: white;
+      text-transform: uppercase;
+      font-size: 85% !important;
+      padding: 6px 10px;
+    }
+  }
+
+  table.ui-datepicker-calendar {
+    border: none;
+
+    thead {
+      th { 
+        border-bottom: 1px solid $color-border;
+        border-right: 1px solid $color-border;
+        color: $color-body-text;
+        width: 33px;
+
+        &:last-child {
+          border-right: none;
+        }
+      }
+    }
+    tbody {
+      tr:hover {
+        td {
+          background-color: transparent !important;
+        }
+      }
+      &:last-child tr:last-child td {
+        border-bottom: none;
+      }
+      td {
+        a {
+          border: 1px solid transparent;
+          background-color: white;
+          background-image: none;
+          font-size: 85%;
+          color: $color-body-text;
+
+          &.ui-state-active {
+            background-color: $c_green1;
+            color: white;
+          }
+
+          &:hover {
+            background-color: $c_green1;
+            color: white;
+            border-color: darken($c_green1, 5);
+
+          }
+        }
+
+        &.ui-state-disabled {
+          .ui-state-default {
+            border: none;
+            background-image: none;
+            background-color: transparent;
+          }
+        }
+
+        &.ui-datepicker-today {
+          a {
+            background-color: $c_yellow1;
+            color: white;
+            border: 1px solid darken($c_yellow1, 5);
+          }
+        }
+      }      
+    }
+  }
+}

@@ -1,0 +1,171 @@
+// Base
+//--------------------------------------------------------------
+body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, p, blockquote, th, td { margin: 0; padding: 0; font-size: 13px; }
+
+body {
+  font-family: $base-font-family;
+  font-size: $body-font-size;
+  font-weight: 400;
+  color: $color-body-text;
+  text-rendering: optimizeLegibility;
+}
+
+hr {
+  border-top: 1px solid $color-border;
+  border-bottom: 1px solid white;
+  border-left: none;
+}
+
+// links
+//--------------------------------------------------------------
+a { 
+  color: $color-links;
+  text-decoration: none;
+  line-height: inherit;
+
+  &:active, &:visited, &:focus {
+    color: darken($color-links, 5);    
+  }
+
+  &.button {
+    &:active, &:visited, &:focus {
+      color: white !important;
+    }    
+  }
+
+  &:hover {
+    color: lighten($c_blue1, 10);
+  }
+  &:focus { 
+    color: $color-links; 
+    outline: none; 
+  }
+
+}
+
+// Headings
+//--------------------------------------------------------------
+
+h1,h2,h3,h4,h5,h6 {
+  font-weight: bold; 
+  color: $color-headers; 
+  line-height: 1.1; 
+}
+
+h1 { font-size: 44px; }
+h2 { font-size: 37px; }
+h3 { font-size: 27px; }
+h4 { font-size: 23px; }
+h5 { font-size: 17px; }
+h6 { font-size: 14px; }
+
+
+// Lists
+//--------------------------------------------------------------
+ul {
+  &.inline-menu {
+    li {
+      display: inline-block;
+    }
+  }
+  &.fields {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+}
+
+dl {
+  width: 100%;
+  overflow: hidden;
+  margin: 5px 0;
+  color: lighten($color-body-text, 15);
+
+  dt, dd {
+    float: left;
+    line-height: 16px;
+    padding: 5px;
+    text-align: justify;
+  }
+
+  dt {
+    width: 40%;
+    font-weight: bold;
+    padding-left: 0;
+    text-transform: uppercase;
+    font-size: 85%;
+  }
+
+  dd {
+    width: 60%;
+    padding-right: 0;
+  }
+
+  dd:after {
+    content: '';
+    clear: both;
+  }
+
+}
+
+// Helpers
+.align-center  { text-align: center  }
+.align-right   { text-align: right   }
+.align-left    { text-align: left    }
+.align-justify { text-align: justify }
+
+.green { color: $c_green1 }
+.blue  { color: $c_blue1  }
+.red   { color: $c_red1   }
+.yellow{ color: $c_yellow1}
+
+.no-objects-found {
+  text-align: center;
+  font-size: 120%;
+  text-transform: uppercase;
+  padding: 40px 0px;
+  color: lighten($color-body-text, 15);
+}
+
+// States
+//--------------------------------------------------------------
+.state {
+  @include border-radius(3px);
+  text-transform: uppercase;
+  font-size: 80%;
+  font-weight: bold;
+  border: 1px solid transparent;
+  padding: 2px 5px;  
+  width: 100%;
+  display: inline-block;
+  text-align: center;
+
+  &.complete, &.ready, &.paid, &.sold {
+    background-color: $c_green1;
+
+    &, a {
+      color: white;
+    }
+  }
+
+  &.pending {
+    background-color: $c_yellow1;
+
+    &, a { 
+      color: white
+    }
+  }
+
+  &.canceled {
+    background-color: $c_red1;
+    color: white;
+  }
+
+  &.balance_due {
+    background-color: $c_blue2;
+  }
+  &.cart {
+    background-color: lighten($c_blue1, 30);
+    color: lighten($color-body-text, 15);
+  }
+}

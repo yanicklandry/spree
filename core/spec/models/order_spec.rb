@@ -9,15 +9,12 @@ end
 describe Spree::Order do
   before(:each) do
     reset_spree_preferences
-    Spree::Gateway.create({:name => 'Test', :active => true, :environment => 'test', :description => 'foofah'}, :without_protection => true)
   end
 
   let(:user) { stub_model(Spree::LegacyUser, :email => "spree@example.com") }
   let(:order) { stub_model(Spree::Order, :user => user) }
-  let(:gateway) { Spree::Gateway::Bogus.new({:name => "Credit Card", :active => true}, :without_protection => true) }
 
   before do
-    Spree::Gateway.stub :current => gateway
     Spree::LegacyUser.stub(:current => mock_model(Spree::LegacyUser, :id => 123))
   end
 
@@ -123,8 +120,12 @@ describe Spree::Order do
 
   context "#process_payments!" do
     it "should process the payments" do
-      order.stub!(:payments).and_return([mock(Spree::Payment)])
-      order.payment.should_receive(:process!)
+      order.stub(:total).and_return(10)
+      payment = stub_model(Spree::Payment)
+      payments = [payment]
+      order.stub(:payments).and_return(payments)
+      payments.should_receive(:with_state).with('checkout').and_return(payments)
+      payments.first.should_receive(:process!)
       order.process_payments!
     end
   end
@@ -159,9 +160,6 @@ describe Spree::Order do
       order.payment_total = 10.10
       order.outstanding_balance?.should be_false
     end
-  end
-
-  context "#outstanding_credit" do
   end
 
   context "#complete?" do
@@ -234,25 +232,6 @@ describe Spree::Order do
     end
   end
 
-  context "with adjustments" do
-    let(:adjustment1) { mock_model(Spree::Adjustment, :amount => 5) }
-    let(:adjustment2) { mock_model(Spree::Adjustment, :amount => 10) }
-
-    context "#ship_total" do
-      it "should return the correct amount" do
-        order.stub_chain :adjustments, :shipping => [adjustment1, adjustment2]
-        order.ship_total.should == 15
-      end
-    end
-
-    context "#tax_total" do
-      it "should return the correct amount" do
-        order.stub_chain :adjustments, :tax => [adjustment1, adjustment2]
-        order.tax_total.should == 15
-      end
-    end
-  end
-
   context "#can_cancel?" do
     it "should be false for completed order in the canceled state" do
       order.state = 'canceled'
@@ -316,223 +295,6 @@ describe Spree::Order do
       order.insufficient_stock_lines.include?(line_item).should be_true
     end
 
-  end
-
-  context "clear_adjustments" do
-    before do
-      @order = Spree::Order.new
-    end
-
-    it "should destroy all previous tax adjustments" do
-      adjustment = mock_model(Spree::Adjustment)
-      adjustment.should_receive :destroy
-
-      @order.stub_chain :adjustments, :tax => [adjustment]
-      @order.clear_adjustments!
-    end
-
-    it "should destroy all price adjustments" do
-      adjustment = mock_model(Spree::Adjustment)
-      adjustment.should_receive :destroy
-
-      @order.stub :price_adjustments => [adjustment]
-      @order.clear_adjustments!
-    end
-  end
-
-  context "#tax_zone" do
-    let(:bill_address) { Factory :address }
-    let(:ship_address) { Factory :address }
-    let(:order) { Spree::Order.create(:ship_address => ship_address, :bill_address => bill_address) }
-    let(:zone) { Factory :zone }
-
-    context "when no zones exist" do
-      before { Spree::Zone.destroy_all }
-
-      it "should return nil" do
-        order.tax_zone.should be_nil
-      end
-    end
-
-    context "when :tax_using_ship_address => true" do
-      before { Spree::Config.set(:tax_using_ship_address => true) }
-
-      it "should calculate using ship_address" do
-        Spree::Zone.should_receive(:match).at_least(:once).with(ship_address)
-        Spree::Zone.should_not_receive(:match).with(bill_address)
-        order.tax_zone
-      end
-    end
-
-    context "when :tax_using_ship_address => false" do
-      before { Spree::Config.set(:tax_using_ship_address => false) }
-
-      it "should calculate using bill_address" do
-        Spree::Zone.should_receive(:match).at_least(:once).with(bill_address)
-        Spree::Zone.should_not_receive(:match).with(ship_address)
-        order.tax_zone
-      end
-    end
-
-    context "when there is a default tax zone" do
-      before do
-        @default_zone = create(:zone, :name => "foo_zone")
-        Spree::Zone.stub :default_tax => @default_zone
-      end
-
-      context "when there is a matching zone" do
-        before { Spree::Zone.stub(:match => zone) }
-
-        it "should return the matching zone" do
-          order.tax_zone.should == zone
-        end
-      end
-
-      context "when there is no matching zone" do
-        before { Spree::Zone.stub(:match => nil) }
-
-        it "should return the default tax zone" do
-          order.tax_zone.should == @default_zone
-        end
-      end
-    end
-
-    context "when no default tax zone" do
-      before { Spree::Zone.stub :default_tax => nil }
-
-      context "when there is a matching zone" do
-        before { Spree::Zone.stub(:match => zone) }
-
-        it "should return the matching zone" do
-          order.tax_zone.should == zone
-        end
-      end
-
-      context "when there is no matching zone" do
-        before { Spree::Zone.stub(:match => nil) }
-
-        it "should return nil" do
-          order.tax_zone.should be_nil
-        end
-      end
-    end
-  end
-
-  context "#price_adjustments" do
-    before do
-      @order = Spree::Order.create!
-      @order.stub :line_items => [line_item1, line_item2]
-    end
-
-    let(:line_item1) { create(:line_item, :order => @order) }
-    let(:line_item2) { create(:line_item, :order => @order) }
-
-    context "when there are no line item adjustments" do
-      it "should return nothing if line items have no adjustments" do
-        @order.price_adjustments.should be_empty
-      end
-    end
-
-    context "when only one line item has adjustments" do
-      before do
-        @adj1 = line_item1.adjustments.create({:amount => 2, :source => line_item1, :label => "VAT 5%"}, :without_protection => true)
-        @adj2 = line_item1.adjustments.create({:amount => 5, :source => line_item1, :label => "VAT 10%"}, :without_protection => true)
-      end
-
-      it "should return the adjustments for that line item" do
-         @order.price_adjustments.should =~ [@adj1, @adj2]
-      end
-    end
-
-    context "when more than one line item has adjustments" do
-      before do
-        @adj1 = line_item1.adjustments.create({:amount => 2, :source => line_item1, :label => "VAT 5%"}, :without_protection => true)
-        @adj2 = line_item2.adjustments.create({:amount => 5, :source => line_item2, :label => "VAT 10%"}, :without_protection => true)
-      end
-
-      it "should return the adjustments for each line item" do
-        @order.price_adjustments.should == [@adj1, @adj2]
-      end
-    end
-  end
-
-  context "#price_adjustment_totals" do
-    before { @order = Spree::Order.create! }
-
-
-    context "when there are no price adjustments" do
-      before { @order.stub :price_adjustments => [] }
-
-      it "should return an empty hash" do
-        @order.price_adjustment_totals.should == {}
-      end
-    end
-
-    context "when there are two adjustments with different labels" do
-      let(:adj1) { mock_model Spree::Adjustment, :amount => 10, :label => "Foo" }
-      let(:adj2) { mock_model Spree::Adjustment, :amount => 20, :label => "Bar" }
-
-      before do
-        @order.stub :price_adjustments => [adj1, adj2]
-      end
-
-      it "should return exactly two totals" do
-        @order.price_adjustment_totals.size.should == 2
-      end
-
-      it "should return the correct totals" do
-        @order.price_adjustment_totals["Foo"].should == 10
-        @order.price_adjustment_totals["Bar"].should == 20
-      end
-    end
-
-    context "when there are two adjustments with one label and a single adjustment with another" do
-      let(:adj1) { mock_model Spree::Adjustment, :amount => 10, :label => "Foo" }
-      let(:adj2) { mock_model Spree::Adjustment, :amount => 20, :label => "Bar" }
-      let(:adj3) { mock_model Spree::Adjustment, :amount => 40, :label => "Bar" }
-
-      before do
-        @order.stub :price_adjustments => [adj1, adj2, adj3]
-      end
-
-      it "should return exactly two totals" do
-        @order.price_adjustment_totals.size.should == 2
-      end
-      it "should return the correct totals" do
-        @order.price_adjustment_totals["Foo"].should == 10
-        @order.price_adjustment_totals["Bar"].should == 60
-      end
-    end
-  end
-
-  context "#exclude_tax?" do
-    before do
-      @order = create(:order)
-      @default_zone = create(:zone)
-      Spree::Zone.stub :default_tax => @default_zone
-    end
-
-    context "when prices include tax" do
-      before { Spree::Config.set(:prices_inc_tax => true) }
-
-      it "should be true when tax_zone is not the same as the default" do
-        @order.stub :tax_zone => create(:zone, :name => "other_zone")
-        @order.exclude_tax?.should be_true
-      end
-
-      it "should be false when tax_zone is the same as the default" do
-        @order.stub :tax_zone => @default_zone
-        @order.exclude_tax?.should be_false
-      end
-    end
-
-    context "when prices do not include tax" do
-      before { Spree::Config.set(:prices_inc_tax => false) }
-
-      it "should be false" do
-        @order.exclude_tax?.should be_false
-      end
-    end
   end
 
   context "#add_variant" do

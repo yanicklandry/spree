@@ -22,12 +22,12 @@ Gem::Specification.new do |s|
   s.add_dependency 'awesome_nested_set', '2.1.4'
 
   s.add_dependency 'jquery-rails', '~> 2.0'
-  s.add_dependency 'select2-rails', '~> 3.0'
+  s.add_dependency 'select2-rails', '~> 3.2'
 
   s.add_dependency 'highline', '= 1.6.11'
   s.add_dependency 'state_machine', '= 1.1.2'
   s.add_dependency 'ffaker', '~> 1.12.0'
-  s.add_dependency 'paperclip', '~> 2.7'
+  s.add_dependency 'paperclip', '~> 2.8'
   s.add_dependency 'aws-sdk', '~> 1.3.4'
   s.add_dependency 'ransack', '~> 0.7.0'
   s.add_dependency 'activemerchant', '= 1.28.0'

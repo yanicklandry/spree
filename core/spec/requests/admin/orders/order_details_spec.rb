@@ -27,7 +27,10 @@ describe "Order Details" do
       visit spree.admin_path
       click_link "Orders"
 
-      within('table#listing_orders tbody tr:nth-child(1)') { click_link "R100" }
+      within_row(1) do
+        click_link "R100"
+      end
+
       page.should have_content("spree t-shirt")
       page.should have_content("$39.98")
       click_link "Edit"
@@ -42,11 +45,12 @@ describe "Order Details" do
 
       visit spree.edit_admin_order_path(order)
 
-      within "#sidebar" do
-        find("#order_number").text.should == "Order #R100"
-        find("#order_status").text.should == "Status: complete"
-        find("#shipment_status").text.should == "Shipment: none"
-        find("#payment_status").text.should == "Payment: none"
+      find(".page-title").text.strip.should == "Order #R100"
+
+      within ".additional-info" do
+        find(".state").text.should == "complete"
+        find("#shipment_status").text.should == "none"
+        find("#payment_status").text.should == "none"
       end
 
       I18n.backend.store_translations I18n.locale,
@@ -57,10 +61,10 @@ describe "Order Details" do
 
       visit spree.edit_admin_order_path(order)
 
-      within "#sidebar" do
-        find("#order_total").text.should == "#{I18n.t(:total)}: £0.00"
-        find("#shipment_status").text.should == "#{I18n.t(:shipment)}: some text"
-        find("#payment_status").text.should == "#{I18n.t(:payment)}: other text"
+      within ".additional-info" do
+        find("#order_total").text.should == "£0.00"
+        find("#shipment_status").text.should == "some text"
+        find("#payment_status").text.should == "other text"
       end
 
     end
