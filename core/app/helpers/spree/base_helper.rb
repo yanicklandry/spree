@@ -101,7 +101,7 @@ module Spree
         crumbs << content_tag(:li, content_tag(:span, t(:products)))
       end
       crumb_list = content_tag(:ul, raw(crumbs.flatten.map{|li| li.mb_chars}.join), :class => 'inline')
-      content_tag(:nav, crumb_list, :id => 'breadcrumbs')
+      content_tag(:nav, crumb_list, :id => 'breadcrumbs', :class => 'sixteen columns')
     end
 
     def taxons_tree(root_taxon, current_taxon, max_level = 1)
@@ -132,12 +132,8 @@ module Spree
       end.sort { |a, b| a.name <=> b.name }
     end
 
-    # generates nested url to product based on supplied taxon
-    def seo_url(taxon, product = nil)
-      return spree.nested_taxons_path(taxon.permalink) if product.nil?
-      warn "DEPRECATION: the /t/taxon-permalink/p/product-permalink urls are "+
-        "not used anymore. Use product_url instead. (called from #{caller[0]})"
-      return product_url(product)
+    def seo_url(taxon)
+      return spree.nested_taxons_path(taxon.permalink)
     end
 
     def gem_available?(name)
@@ -149,6 +145,7 @@ module Spree
     end
 
     def money(amount)
+      ActiveSupport::Deprecation.warn("[SPREE] Spree::BaseHelper#money will be deprecated.  It relies upon a single master currency.  You can instead create a Spree::Money.new(amount, { :currency => your_currency}) or see if the object you're working with returns a Spree::Money object to use.")
       Spree::Money.new(amount)
     end
 

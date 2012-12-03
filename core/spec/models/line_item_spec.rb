@@ -18,18 +18,23 @@ describe Spree::LineItem do
 
   before do
     line_item.stub(:order => order, :variant => variant, :new_record? => false)
+    variant.stub(:currency => "USD")
     Spree::Config.set :allow_backorders => true
   end
 
   context '#save' do
-    it 'should update inventory and totals' do
+    it 'should update inventory, totals, and tax' do
       Spree::InventoryUnit.stub(:increase)
       line_item.should_receive(:update_inventory)
+      # Regression check for #1481
+      order.should_receive(:create_tax_charge!)
       order.should_receive(:update!)
       line_item.save
     end
 
     context 'when order#completed? is true' do
+      # We don't care about this method for these tests
+      before { line_item.stub(:update_order) }
 
       context 'and line_item is a new record' do
         before { line_item.stub(:new_record? => true) }
@@ -37,6 +42,8 @@ describe Spree::LineItem do
         it 'should increase inventory' do
           Spree::InventoryUnit.stub(:increase)
           Spree::InventoryUnit.should_receive(:increase).with(order, variant, 5)
+          # We don't care about this method for this test
+          line_item.stub(:update_order)
           line_item.save
         end
       end
@@ -72,7 +79,11 @@ describe Spree::LineItem do
     end
 
     context 'when order#completed? is false' do
-      before { order.stub(:completed? => false) }
+      before do
+        order.stub(:completed? => false)
+        # We don't care about this method for this test
+        line_item.stub(:update_order)
+      end
 
       it 'should not manage inventory' do
         Spree::InventoryUnit.should_not_receive(:increase)
@@ -83,8 +94,18 @@ describe Spree::LineItem do
   end
 
   context '#destroy' do
+    # Regression test for #1481
+    it "applies tax adjustments" do
+      # We don't care about this method for this test
+      line_item.stub(:remove_inventory)
+      order.should_receive(:create_tax_charge!)
+      line_item.destroy
+    end
+
     context 'when order.completed? is true' do
       it 'should remove inventory' do
+        # We don't care about this method for this test
+        line_item.stub(:update_order)
         Spree::InventoryUnit.should_receive(:decrease).with(order, variant, 5)
         line_item.destroy
       end
@@ -106,6 +127,8 @@ describe Spree::LineItem do
       end
 
       it 'should allow destroy when no units have shipped' do
+        # We don't care about this method for this test
+        line_item.stub(:update_order)
         line_item.should_receive(:remove_inventory)
         line_item.destroy.should be_true
       end
@@ -191,6 +214,8 @@ describe Spree::LineItem do
       shipment.stub(:inventory_units => inventory_units)
       inventory_units.stub(:shipped => shipped_inventory_units)
       shipped_inventory_units.stub(:where).with(:variant_id => line_item.variant_id).and_return(shipped_inventory_units)
+      # We don't care about this method for these test
+      line_item.stub(:update_order)
     end
 
     it 'should not allow quantity to be adjusted lower than already shipped units' do
@@ -212,6 +237,26 @@ describe Spree::LineItem do
       adjustment = line_item.adjustments.create(:amount => 10, :label => "test")
       line_item.destroy
       lambda { adjustment.reload }.should raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
+
+  describe '.currency' do
+    it 'returns the globally configured currency' do
+      line_item.currency == 'USD'
+    end
+  end
+
+  describe ".money" do
+    before { line_item.price = 3.50 }
+    it "returns a Spree::Money representing the total for this line item" do
+      line_item.money.to_s.should == "$17.50"
+    end
+  end
+
+  describe '.single_money' do
+    before { line_item.price = 3.50 }
+    it "returns a Spree::Money representing the price for one variant" do
+      line_item.single_money.to_s.should == "$3.50"
     end
   end
 end

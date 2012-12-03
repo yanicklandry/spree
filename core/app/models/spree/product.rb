@@ -37,20 +37,25 @@ module Spree
     has_many :variants,
       :class_name => 'Spree::Variant',
       :conditions => { :is_master => false, :deleted_at => nil },
-      :order => :position
+      :order => "#{::Spree::Variant.quoted_table_name}.position ASC"
 
     has_many :variants_including_master,
       :class_name => 'Spree::Variant',
       :conditions => { :deleted_at => nil },
       :dependent => :destroy
 
-    delegate_belongs_to :master, :sku, :price, :weight, :height, :width, :depth, :is_master
+    has_many :variants_including_master_and_deleted, :class_name => 'Spree::Variant'
+
+    has_many :prices, :through => :variants, :order => 'spree_variants.position, spree_variants.id, currency'
+
+    delegate_belongs_to :master, :sku, :price, :currency, :display_amount, :display_price, :weight, :height, :width, :depth, :is_master, :has_default_price?, :cost_currency, :price_in, :amount_in
     delegate_belongs_to :master, :cost_price if Variant.table_exists? && Variant.column_names.include?('cost_price')
 
     after_create :set_master_variant_defaults
     after_create :add_properties_and_option_types_from_prototype
     after_create :build_variants_from_option_values_hash, :if => :option_values_hash
     before_save :recalculate_count_on_hand
+
     after_save :save_master
     after_save :set_master_on_hand_to_zero_when_product_has_variants
 
@@ -61,18 +66,18 @@ module Spree
 
     accepts_nested_attributes_for :variants, :allow_destroy => true
 
-    validates :name, :price, :permalink, :presence => true
+    validates :name, :permalink, :presence => true
+    validates :price, :presence => true, :if => proc { Spree::Config[:require_master_price] }
 
     attr_accessor :option_values_hash
 
     attr_accessible :name, :description, :available_on, :permalink, :meta_description,
                     :meta_keywords, :price, :sku, :deleted_at, :prototype_id,
-                    :option_values_hash, :on_hand, :weight, :height, :width, :depth,
+                    :option_values_hash, :on_demand, :on_hand, :weight, :height, :width, :depth,
                     :shipping_category_id, :tax_category_id, :product_properties_attributes,
-                    :variants_attributes, :taxon_ids, :option_type_ids
+                    :variants_attributes, :taxon_ids, :option_type_ids, :cost_currency
 
     attr_accessible :cost_price if Variant.table_exists? && Variant.column_names.include?('cost_price')
-
 
     accepts_nested_attributes_for :product_properties, :allow_destroy => true, :reject_if => lambda { |pp| pp[:property_name].blank? }
 
@@ -96,6 +101,16 @@ module Spree
       variants.any?
     end
 
+    # should product be displayed on products pages and search
+    def on_display?
+      has_stock? || Spree::Config[:show_zero_stock_products]
+    end
+
+    # is this product actually available for purchase
+    def on_sale?
+      has_stock? || Spree::Config[:allow_backorders]
+    end
+
     # returns the number of inventory units "on_hand" for this product
     def on_hand
       has_variants? ? variants.sum(&:on_hand) : master.on_hand
@@ -103,8 +118,16 @@ module Spree
 
     # adjusts the "on_hand" inventory level for the product up or down to match the given new_level
     def on_hand=(new_level)
-      raise 'cannot set on_hand of product with variants' if has_variants? && Spree::Config[:track_inventory_levels]
-      master.on_hand = new_level
+      unless self.on_demand
+        raise 'cannot set on_hand of product with variants' if has_variants? && Spree::Config[:track_inventory_levels] 
+        master.on_hand = new_level
+      end
+    end
+
+    def on_demand=(new_on_demand)
+      raise 'cannot set on_demand of product with variants' if has_variants? && Spree::Config[:track_inventory_levels]
+      master.on_demand = on_demand
+      self[:on_demand] = new_on_demand
     end
 
     # Returns true if there are inventory units (any variant) with "on_hand" state for this product
@@ -160,6 +183,8 @@ module Spree
       variant.sku = 'COPY OF ' + master.sku
       variant.deleted_at = nil
       variant.images = master.images.map { |i| image_dup.call i }
+      variant.price = master.price
+      variant.currency = master.currency
       p.master = variant
 
       # don't dup the actual variants, just the characterising types
@@ -217,10 +242,6 @@ module Spree
       end
     end
 
-    def display_price
-      Spree::Money.new(price).to_s
-    end
-
     private
 
       # Builds variants from a hash of option types & values
@@ -253,7 +274,7 @@ module Spree
       # the master on_hand is meaningless once a product has variants as the inventory
       # units are now "contained" within the product variants
       def set_master_on_hand_to_zero_when_product_has_variants
-        master.on_hand = 0 if has_variants? && Spree::Config[:track_inventory_levels]
+        master.on_hand = 0 if has_variants? && Spree::Config[:track_inventory_levels] && !self.on_demand
       end
 
       # ensures the master variant is flagged as such
@@ -264,7 +285,7 @@ module Spree
       # there's a weird quirk with the delegate stuff that does not automatically save the delegate object
       # when saving so we force a save using a hook.
       def save_master
-        master.save if master && (master.changed? || master.new_record?)
+        master.save if master && (master.changed? || master.new_record? || (master.default_price && (master.default_price.changed || master.default_price.new_record)))
       end
 
       def ensure_master

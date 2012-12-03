@@ -11,7 +11,6 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 require 'database_cleaner'
 
 require 'spree/core/testing_support/factories'
-require 'spree/core/testing_support/env'
 require 'spree/core/testing_support/controller_requests'
 require 'spree/core/testing_support/authorization_helpers'
 require 'spree/core/testing_support/preferences'
@@ -21,13 +20,6 @@ require 'spree/core/url_helpers'
 require 'paperclip/matchers'
 
 RSpec.configure do |config|
-  # == Mock Framework
-  #
-  # If you prefer to use mocha, flexmock or RR, uncomment the appropriate line:
-  #
-  # config.mock_with :mocha
-  # config.mock_with :flexmock
-  # config.mock_with :rr
   config.mock_with :rspec
 
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
@@ -40,7 +32,7 @@ RSpec.configure do |config|
 
   config.before(:each) do
     if example.metadata[:js]
-      DatabaseCleaner.strategy = :truncation, { :except => ['spree_countries', 'spree_zones', 'spree_zone_members', 'spree_states', 'spree_roles'] }
+      DatabaseCleaner.strategy = :truncation
     else
       DatabaseCleaner.strategy = :transaction
     end

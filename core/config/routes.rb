@@ -9,6 +9,7 @@ Spree::Core::Engine.routes.draw do
   resources :tax_categories
 
   resources :states, :only => :index
+  resources :countries, :only => :index
 
   # non-restful checkout stuff
   put '/checkout/update/:state', :to => 'checkout#update', :as => :update_checkout
@@ -63,7 +64,6 @@ Spree::Core::Engine.routes.draw do
     end
     resources :states
     resources :tax_categories
-    resources :configurations, :only => :index
     resources :products do
       resources :product_properties
       resources :images do
@@ -145,11 +145,20 @@ Spree::Core::Engine.routes.draw do
     end
 
     resources :taxonomies do
+    	collection do
+    		post :update_positions
+    	end
       member do
         get :get_children
       end
 
       resources :taxons
+    end
+
+    resources :taxons, :only => [] do
+      collection do
+        get :search
+      end
     end
 
     resources :reports, :only => [:index, :show] do
@@ -176,6 +185,7 @@ Spree::Core::Engine.routes.draw do
 
   match '/admin', :to => 'admin/orders#index', :as => :admin
 
+  match '/unauthorized', :to => 'home#unauthorized', :as => :unauthorized
   match '/content/cvv', :to => 'content#cvv', :as => :cvv
   match '/content/*path', :to => 'content#show', :via => :get, :as => :content
 end

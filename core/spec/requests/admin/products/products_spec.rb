@@ -149,7 +149,18 @@ describe "Products" do
       it "should show validation errors", :js => true do
         click_button "Create"
         page.should have_content("Name can't be blank")
-        page.should have_content("Price can't be blank")
+      end
+
+      # Regression test for #2097
+      it "can set the count on hand to a null value", :js => true do
+        fill_in "product_name", :with => "Baseball Cap"
+        fill_in "product_price", :with => "100"
+        click_button "Create"
+        page.should have_content("successfully created!")
+        fill_in "product_on_hand", :with => ""
+        click_button "Update"
+        page.should_not have_content("spree_products.count_on_hand may not be NULL")
+        page.should have_content("successfully updated!")
       end
     end
 
@@ -183,5 +194,18 @@ describe "Products" do
         end
       end
     end
+
+    context 'updating a product', :js => true do
+      let(:product) { create(:product) }
+
+      it 'should parse correctly available_on' do
+        visit spree.admin_product_path(product)
+        fill_in "product_available_on", :with => "2012/12/25"
+        click_button "Update"
+        page.should have_content("successfully updated!")
+        Spree::Product.last.available_on.should == 'Tue, 25 Dec 2012 00:00:00 UTC +00:00'
+      end
+    end
+
   end
 end

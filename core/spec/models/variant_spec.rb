@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 describe Spree::Variant do
@@ -26,6 +28,22 @@ describe Spree::Variant do
     variant.product.should_receive(:on_hand).and_return(3)
     variant.product.should_receive(:update_column).with(:count_on_hand, 3)
     variant.run_callbacks(:save)
+  end
+
+  it "lock_version should prevent stale updates" do
+    copy = Spree::Variant.find(variant.id)
+
+    copy.count_on_hand = 200
+    copy.save!
+
+    variant.count_on_hand = 100
+    expect { variant.save }.to raise_error ActiveRecord::StaleObjectError
+
+    variant.reload.count_on_hand.should == 200
+    variant.count_on_hand = 100
+    variant.save
+
+    variant.reload.count_on_hand.should == 100
   end
 
   context "on_hand=" do
@@ -82,7 +100,7 @@ describe Spree::Variant do
 
       end
 
-      context "and count is decreased" do
+      context "and count is negative" do
         before { variant.inventory_units.stub(:with_state).and_return([]) }
 
         it "should change count_on_hand to given value" do
@@ -218,6 +236,14 @@ describe Spree::Variant do
           variant.price.should == 1599.99
         end
       end
+
+      context "with a numeric price" do
+        it "uses the price as is" do
+          I18n.locale = :de
+          variant.price = 1599.99
+          variant.price.should == 1599.99
+        end
+      end
     end
 
     context "cost_price=" do
@@ -234,6 +260,101 @@ describe Spree::Variant do
           variant.cost_price = '1.599,99'
           variant.cost_price.should == 1599.99
         end
+      end
+
+      context "with a numeric price" do
+        it "uses the price as is" do
+          I18n.locale = :de
+          variant.cost_price = 1599.99
+          variant.cost_price.should == 1599.99
+        end
+      end
+    end
+  end
+
+  context "#currency" do
+    it "returns the globally configured currency" do
+      variant.currency.should == "USD"
+    end
+  end
+
+  context "#display_amount" do
+    it "retuns a Spree::Money" do
+      variant.price = 21.22
+      variant.display_amount.should == "$21.22"
+    end
+  end
+
+  context "#cost_currency" do
+    context "when cost currency is nil" do
+      before { variant.cost_currency = nil }
+      it "populates cost currency with the default value on save" do
+        variant.save!
+        variant.cost_currency.should == "USD"
+      end
+    end
+  end
+
+  describe '.price_in' do
+    before do
+      variant.prices << create(:price, :variant => variant, :currency => "EUR", :amount => 33.33)
+    end
+
+    subject { variant.price_in(currency).display_amount }
+
+    context "when currency is not specified" do
+      let(:currency) { nil }
+
+      it "returns nil" do
+        subject.should be_nil
+      end
+    end
+
+    context "when currency is EUR" do
+      let(:currency) { 'EUR' }
+
+      it "returns the value in the EUR" do
+        subject.should == "€33.33"
+      end
+    end
+
+    context "when currency is USD" do
+      let(:currency) { 'USD' }
+
+      it "returns the value in the USD" do
+        subject.should == "$19.99"
+      end
+    end
+  end
+
+  describe '.amount_in' do
+    before do
+      variant.prices << create(:price, :variant => variant, :currency => "EUR", :amount => 33.33)
+    end
+
+    subject { variant.amount_in(currency) }
+
+    context "when currency is not specified" do
+      let(:currency) { nil }
+
+      it "returns nil" do
+        subject.should be_nil
+      end
+    end
+
+    context "when currency is EUR" do
+      let(:currency) { 'EUR' }
+
+      it "returns the value in the EUR" do
+        subject.should == 33.33
+      end
+    end
+
+    context "when currency is USD" do
+      let(:currency) { 'USD' }
+
+      it "returns the value in the USD" do
+        subject.should == 19.99
       end
     end
   end

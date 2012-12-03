@@ -50,4 +50,18 @@ describe Spree::Core::Search::Base do
     searcher.retrieve_products.count.should == 1
   end
 
+  it "accepts a current user" do
+    user = stub
+    searcher = Spree::Core::Search::Base.new({})
+    searcher.current_user = user
+    searcher.current_user.should eql(user)
+  end
+
+  it "finds products in alternate currencies" do
+    price = create(:price, :currency => 'EUR', :variant => @product1.master)
+    searcher = Spree::Core::Search::Base.new({})
+    searcher.current_currency = 'EUR'
+    searcher.retrieve_products.should == [@product1]
+  end
+
 end

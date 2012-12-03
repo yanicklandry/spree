@@ -4,6 +4,14 @@ module Spree
 
       respond_to :html, :json, :js
 
+      def search
+        if params[:ids]
+          @taxons = Spree::Taxon.where(:id => params[:ids].split(','))
+        else
+          @taxons = Spree::Taxon.limit(20).search(:name_cont => params[:q]).result
+        end
+      end
+
       def create
         @taxonomy = Taxonomy.find(params[:taxonomy_id])
         @taxon = @taxonomy.taxons.build(params[:taxon])
@@ -55,7 +63,7 @@ module Spree
           elsif new_position < new_siblings.index(@taxon)
             @taxon.move_to_left_of(new_siblings[new_position]) # we move up
           else
-            @taxon.move_to_right_of(new_siblings[new_position]) # we move down
+            @taxon.move_to_right_of(new_siblings[new_position-1]) # we move down
           end
           # Reset legacy position, if any extensions still rely on it
           new_parent.children.reload.each{|t| t.update_column(:position, t.position)}
@@ -77,7 +85,7 @@ module Spree
         @update_children = true if params[:taxon][:name] != @taxon.name || params[:taxon][:permalink] != @taxon.permalink
 
         if @taxon.update_attributes(params[:taxon])
-          flash.notice = flash_message_for(@taxon, :successfully_updated)
+          flash[:success] = flash_message_for(@taxon, :successfully_updated)
         end
 
         #rename child taxons

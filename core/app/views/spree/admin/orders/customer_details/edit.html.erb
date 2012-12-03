@@ -3,7 +3,7 @@
 <%= csrf_meta_tags %>
 
 <% content_for :page_title do %>
- / <%= t(:customer_details) %>
+  <i class="icon-arrow-right"></i> <%= t(:customer_details) %>
 <% end %>
 
 <% content_for :page_actions do %>
@@ -12,8 +12,8 @@
 
 <% if @order.cart? %>
   <div id="add-line-item" data-hook>
-    <fieldset>
-      <legend><%= t(:customer_search) %></legend>
+    <fieldset class="no-border-bottom">
+      <legend align="center"><%= t(:customer_search) %></legend>
       <%= label_tag :customer_search, t(:enter_at_least_five_letters) %>
       <%= text_field_tag :customer_search,  nil, :class => 'fullwidth title' %>
     </fieldset>

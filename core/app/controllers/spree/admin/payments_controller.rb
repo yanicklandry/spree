@@ -32,7 +32,7 @@ module Spree
 
           if @order.completed?
             @payment.process!
-            flash.notice = flash_message_for(@payment, :successfully_created)
+            flash[:success] = flash_message_for(@payment, :successfully_created)
 
             respond_with(@payment) { |format| format.html { redirect_to admin_order_payments_path(@order) } }
           else
@@ -40,7 +40,7 @@ module Spree
             until @order.completed?
               @order.next!
             end
-            flash.notice = t(:new_order_completed)
+            flash[:success] = t(:new_order_completed)
             respond_with(@payment) { |format| format.html { redirect_to admin_order_url(@order) } }
           end
 
@@ -56,7 +56,7 @@ module Spree
         # Because we have a transition method also called void, we do this to avoid conflicts.
         event = "void_transaction" if event == "void"
         if @payment.send("#{event}!")
-          flash.notice = t(:payment_updated)
+          flash[:success] = t(:payment_updated)
         else
           flash[:error] = t(:cannot_perform_operation)
         end
@@ -77,7 +77,7 @@ module Spree
 
       def load_data
         @amount = params[:amount] || load_order.total
-        @payment_methods = PaymentMethod.available(:back_end)
+        @payment_methods = PaymentMethod.available
         if @payment and @payment.payment_method
           @payment_method = @payment.payment_method
         else
