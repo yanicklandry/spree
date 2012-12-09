@@ -34,7 +34,8 @@ module Spree
           Spree::Calculator::FlexiRate,
           Spree::Calculator::PerItem,
           Spree::Calculator::PercentPerItem,
-          Spree::Calculator::FreeShipping
+          Spree::Calculator::FreeShipping,
+          Spree::Calculator::CostPrice
         ]
       end
 
@@ -44,7 +45,9 @@ module Spree
           Spree::Promotion::Rules::Product,
           Spree::Promotion::Rules::User,
           Spree::Promotion::Rules::FirstOrder,
-          Spree::Promotion::Rules::UserLoggedIn]
+          Spree::Promotion::Rules::UserLoggedIn,
+          Spree::Promotion::Rules::Role
+        ]
       end
 
       initializer 'spree.promo.register.promotions.actions' do |app|

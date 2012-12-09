@@ -84,6 +84,9 @@ en:
     user_logged_in:
       name: User Logged In
       description: Available only to logged in users
+    role:
+      name: Role (retailer)
+      description: Available only to the specified roles (retailer)
   rules: Rules
   spree/order:
     coupon_code: Coupon Code
