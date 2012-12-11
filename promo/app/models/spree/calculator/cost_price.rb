@@ -13,7 +13,7 @@ module Spree
         order = object
       end
       
-      if order.user.spree_roles.include?(Spree::PerlimpinpinController::ROLE_RETAILER)
+      if order.user and order.user.spree_roles.include?(Spree::PerlimpinpinController::ROLE_RETAILER)
 
         order.line_items.each do |line|
           line.update_column :price, line.variant.cost_price
