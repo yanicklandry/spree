@@ -6,7 +6,7 @@
         <% 
         available_shipping_methods = @order.rate_hash
       
-        is_retailer = spree_current_user.spree_roles.include? Spree::PerlimpinpinController::ROLE_RETAILER
+        is_retailer = spree_current_user and spree_current_user.spree_roles.include? Spree::PerlimpinpinController::ROLE_RETAILER
         
         available_shipping_methods.each do |shipping_method| 
           
