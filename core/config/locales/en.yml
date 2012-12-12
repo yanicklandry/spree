@@ -1096,3 +1096,4 @@ en:
   zone_based: "Zone Based"
   zone_setting_description: "Collections of countries, states or other zones to be used in various calculations."
   zones: Zones
+  custom_shipping_calculator: Custom Shipping Calculator

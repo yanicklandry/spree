@@ -4,30 +4,19 @@ require 'bigdecimal/util'
 
 module Spree
   class Calculator::PriceSack < Calculator
-    preference :minimal_amount, :decimal, :default => 0
-    preference :normal_amount, :decimal, :default => 0
-    preference :discount_amount, :decimal, :default => 0
-
-    attr_accessible :preferred_minimal_amount,
-                    :preferred_normal_amount,
-                    :preferred_discount_amount
-
     def self.description
-      I18n.t(:price_sack)
+      I18n.t(:custom_shipping_calculator)
     end
 
     # as object we always get line items, as calculable we have Coupon, ShippingMethod
-    def compute(object)
-      if object.is_a?(Array)
-        base = object.map { |o| o.respond_to?(:amount) ? o.amount : BigDecimal(o.to_s) }.sum
+    def compute(object=nil)
+      item_total = object.line_items.map(&:amount).sum
+      if item_total >= 100
+        0
+      elsif item_total >= 50
+        15
       else
-        base = object.respond_to?(:amount) ? object.amount : BigDecimal(object.to_s)
-      end
-
-      if base < self.preferred_minimal_amount
-        self.preferred_normal_amount
-      else
-        self.preferred_discount_amount
+        10
       end
     end
   end
