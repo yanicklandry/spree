@@ -12,8 +12,6 @@
           
           ship_retailer = !!(shipping_method.id == Spree::PerlimpinpinController::SHIPPING_METHOD_RETAILER.id)
           
-          debugger
-          
           if (is_retailer and ship_retailer) or (!is_retailer and !ship_retailer) %>
             <label>
               <%= radio_button(:order, :shipping_method_id, shipping_method[:id]) %>
