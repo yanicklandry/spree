@@ -6,11 +6,13 @@
         <% 
         available_shipping_methods = @order.rate_hash
       
-        is_retailer = spree_current_user and spree_current_user.spree_roles.include? Spree::PerlimpinpinController::ROLE_RETAILER
+        is_retailer = !!(spree_current_user and spree_current_user.spree_roles.include? Spree::PerlimpinpinController::ROLE_RETAILER)
         
         available_shipping_methods.each do |shipping_method| 
           
-          ship_retailer = shipping_method.id == Spree::PerlimpinpinController::SHIPPING_METHOD_RETAILER.id
+          ship_retailer = !!(shipping_method.id == Spree::PerlimpinpinController::SHIPPING_METHOD_RETAILER.id)
+          
+          debugger
           
           if (is_retailer and ship_retailer) or (!is_retailer and !ship_retailer) %>
             <label>
