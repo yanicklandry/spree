@@ -4,7 +4,7 @@
     <% 
       available_payment_methods = @order.available_payment_methods
       
-      if spree_current_user.spree_roles.include? Spree::PerlimpinpinController::ROLE_RETAILER
+      if spree_current_user and spree_current_user.spree_roles.include? Spree::PerlimpinpinController::ROLE_RETAILER
         available_payment_methods = [Spree::PerlimpinpinController::PAYMENT_METHOD_RETAILER]
       else
         available_payment_methods -= [Spree::PerlimpinpinController::PAYMENT_METHOD_RETAILER]
