@@ -35,6 +35,15 @@ module Spree
     # Shows the current incomplete order from the session
     def edit
       @order = current_order(true)
+      
+      if @order.user and @order.user.spree_roles.include?(Spree::PerlimpinpinController::ROLE_RETAILER)
+
+        @order.line_items.each do |line|
+          line.update_column :price, line.variant.cost_price
+        end
+      end
+      
+      
       associate_user
     end
 
