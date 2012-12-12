@@ -3,11 +3,21 @@
   <div class="inner" data-hook="shipping_method_inner">
     <div id="methods">
       <p class="field radios">
-        <% @order.rate_hash.each do |shipping_method| %>
-          <label>
-            <%= radio_button(:order, :shipping_method_id, shipping_method[:id]) %>
-            <%= shipping_method.name %> <%= shipping_method.display_price %>
-          </label>
+        <% 
+        available_shipping_methods = @order.rate_hash
+      
+        is_retailer = spree_current_user.spree_roles.include? Spree::PerlimpinpinController::ROLE_RETAILER
+        
+        available_shipping_methods.each do |shipping_method| 
+          
+          ship_retailer = shipping_method.id == Spree::PerlimpinpinController::SHIPPING_METHOD_RETAILER.id
+          
+          if (is_retailer and ship_retailer) or (!is_retailer and !ship_retailer) %>
+            <label>
+              <%= radio_button(:order, :shipping_method_id, shipping_method[:id]) %>
+              <%= shipping_method.name %> <%= shipping_method.display_price %>
+            </label>
+          <% end %>
         <% end %>
       </p>
     </div>

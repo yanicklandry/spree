@@ -1,7 +1,16 @@
 <fieldset id="payment" data-hook>
   <legend><%= t(:payment_information) %></legend>
   <div data-hook="checkout_payment_step">
-    <% @order.available_payment_methods.each do |method| %>
+    <% 
+      available_payment_methods = @order.available_payment_methods
+      
+      if spree_current_user.spree_roles.include? Spree::PerlimpinpinController::ROLE_RETAILER
+        available_payment_methods = [Spree::PerlimpinpinController::PAYMENT_METHOD_RETAILER]
+      else
+        available_payment_methods -= [Spree::PerlimpinpinController::PAYMENT_METHOD_RETAILER]
+      end
+      available_payment_methods.each do |method| 
+    %>
     <p>
       <label>
         <%= radio_button_tag "order[payments_attributes][][payment_method_id]", method.id, method == @order.payment_method %>
@@ -11,7 +20,7 @@
     <% end %>
 
     <ul id="payment-methods" data-hook>
-      <% @order.available_payment_methods.each do |method| %>
+      <% available_payment_methods.each do |method| %>
         <li id="payment_method_<%= method.id %>" class="<%= 'last' if method == @order.available_payment_methods.last %>" data-hook>
           <fieldset>
             <%= render :partial => "spree/checkout/payment/#{method.method_type}", :locals => { :payment_method => method } %>
