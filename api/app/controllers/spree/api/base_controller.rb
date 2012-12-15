@@ -1,4 +1,3 @@
-require 'spree/api/responders'
 module Spree
   module Api
     class BaseController < ActionController::Metal
@@ -14,6 +13,7 @@ module Spree
       before_filter :authenticate_user
       after_filter  :set_jsonp_format
 
+      rescue_from Exception, :with => :error_during_processing
       rescue_from CanCan::AccessDenied, :with => :unauthorized
       rescue_from ActiveRecord::RecordNotFound, :with => :not_found
 
@@ -64,6 +64,11 @@ module Spree
 
       def unauthorized
         render "spree/api/errors/unauthorized", :status => 401 and return
+      end
+
+      def error_during_processing(exception)
+        render :text => { exception: exception.message }.to_json,
+          :status => 422 and return
       end
 
       def requires_authentication?
