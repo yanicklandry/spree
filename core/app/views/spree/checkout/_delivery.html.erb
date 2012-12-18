@@ -15,7 +15,7 @@
           if (is_retailer and ship_retailer) or (!is_retailer and !ship_retailer) %>
             <label>
               <%= radio_button(:order, :shipping_method_id, shipping_method[:id]) %>
-              <%= shipping_method.name %> <%= shipping_method.display_price %>
+              <%= shipping_method.name %> <%= is_retailer ? "" : shipping_method.display_price %>
             </label>
           <% end %>
         <% end %>
