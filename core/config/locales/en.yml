@@ -228,6 +228,7 @@ en:
   adjustments: Adjustments
   administration: Administration
   admin:
+    payment_methods: Payment Methods
     mail_methods:
       send_testmail: 'Send Testmail'
       testmail:
