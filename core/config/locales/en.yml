@@ -755,6 +755,8 @@ en:
         description: "(separated by space or comma)"
         name: "Product name or description have following"
         sentence: name or description contain <em>%s</em>
+      in_promotion:
+        name: "Products in promotion"
       in_name_or_keywords:
         args:
           words: Words

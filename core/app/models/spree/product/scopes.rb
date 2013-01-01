@@ -157,6 +157,11 @@ module Spree
       where(:id => ids)
     end
 
+    # Finds all products that are in promotion
+    add_search_scope :in_promotion do 
+      joins(:promotion_rules)
+    end
+
     # Sorts products from most popular (popularity is extracted from how many
     # times use has put product in cart, not completed orders)
     #

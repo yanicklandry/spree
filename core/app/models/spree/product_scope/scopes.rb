@@ -19,7 +19,8 @@ module Spree
           :in_name => [:words],
           :in_name_or_keywords => [:words],
           :in_name_or_description => [:words],
-          :with_ids => [:ids]
+          :with_ids => [:ids],
+          :in_promotion => []
         },
         # Scopes for selecting products based on option types and properties
         :values => {
